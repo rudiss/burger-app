@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Aux from '../../hoc/Aux';
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
@@ -21,17 +20,23 @@ class BurgerBuilder extends Component {
   // }
   
   state = {
-    ingredients: {
-      salad: 0,
-      bacon: 0,
-      cheese: 0,
-      meat: 0,
-    },
+    ingredients: null,
     totalPrice: 4,
     purchasable: false,
     purchasing: false,
     loading: false,
+    error: false
   };
+
+  async componentDidMount () {
+    try {
+      const getIngredients = await axios.get('https://bugger-app.firebaseio.com/ingredients.json');
+      this.setState({ingredients: getIngredients.data})
+    } catch (error) {
+      this.setState({error: true})
+    }
+    
+  }
 
   purchaseHandler = () => {
     this.setState({purchasing: true});
@@ -60,6 +65,18 @@ class BurgerBuilder extends Component {
       }
       await axios.post('/orders.json', order);
       await this.setState({ loading: false, purchasing: false });
+
+      const queryParams = [];
+      for (let i in this.state.ingredients) {
+        queryParams.push(encodeURIComponent(i) + '=' +  encodeURIComponent(this.state.ingredients[i]));
+        console.log(queryParams);
+      }
+
+      const queryString = queryParams.join('&');
+      this.props.history.push({
+        pathname: '/checkout',
+        search: `?${queryString}`,
+      });
       
     } catch (error) {
       this.setState({ loading: false, purchasing: false });
@@ -114,35 +131,44 @@ class BurgerBuilder extends Component {
       ...this.state.ingredients,
     };
     
-    for(let key in disabledInfo) {
+    for (let key in disabledInfo) {
       disabledInfo[key] = disabledInfo[key] <= 0
     };
 
-    let orderSummary = <OrderSummary
+    let orderSummary = null;
+    let burger = this.state.error ? <p style={{textAlign: 'center'}}>ingredients can't be loaded!</p> : <Spinner />;
+
+    if (this.state.ingredients) {burger = (
+      <React.Fragment>
+        <Burger ingredients={ this.state.ingredients }/>
+        <BuildControls 
+          ingredientAdded={ this.addIngredientHandler }
+          ingredientRemoved={ this.removeIngredientHandler }
+          disabled={disabledInfo}
+          price={this.state.totalPrice}
+          purchasable={this.state.purchasable}
+          ordered={this.purchaseHandler} />
+      </React.Fragment>
+    );
+
+      orderSummary = <OrderSummary
       price={this.state.totalPrice.toFixed(2)}
       purchaseCancelled={this.purchaseCancelHandler}
       purchaseContinue={this.purchaseContinueHandler}
       ingredients={this.state.ingredients}/>
-      
+  
+    }
     if (this.state.loading) {
       orderSummary =  <Spinner />;
     }
 
     return (
-      <Aux>
+      <React.Fragment>
         <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
           {orderSummary}
         </Modal>
-        <Burger ingredients={ this.state.ingredients }/>
-        <BuildControls 
-        ingredientAdded={ this.addIngredientHandler }
-        ingredientRemoved={ this.removeIngredientHandler }
-        disabled={disabledInfo}
-        price={this.state.totalPrice}
-        purchasable={this.state.purchasable}
-        ordered={this.purchaseHandler}
-        />
-      </Aux>
+        {burger}
+      </React.Fragment>
     );
   }
 }

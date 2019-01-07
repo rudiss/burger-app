@@ -3,7 +3,6 @@ import Logo from '../../Logo/Logo';
 import NavigationList from '../NavigationList/NavigationList';
 import classes from './SideDrawer.css';
 import Backdrop from '../../UI/Backdrop/Backdrop';
-import Aux from '../../../hoc/Aux';
 
 const sideDrawer = props => {
   let attachedClasses = [classes.SideDrawer, classes.Close];
@@ -11,7 +10,7 @@ const sideDrawer = props => {
   if (props.open) attachedClasses = [classes.SideDrawer, classes.Open];
 
   return (
-    <Aux>
+    <React.Fragment>
       <Backdrop show={props.open} clicked={props.closed}/>
       <div className={attachedClasses.join(' ')}>
         <div style={{height: '11%',marginBottom: '32px'}}>
@@ -21,7 +20,7 @@ const sideDrawer = props => {
           <NavigationList/>
         </nav>
       </div>
-    </Aux>
+    </React.Fragment>
   )
 }
 
