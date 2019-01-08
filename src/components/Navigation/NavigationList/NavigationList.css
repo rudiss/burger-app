@@ -8,8 +8,6 @@
   flex-flow: column;
 }
 
-
-
 @media (min-width: 500px) {
   .NavigationList {
     flex-flow: row;
