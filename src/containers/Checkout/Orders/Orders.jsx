@@ -23,7 +23,7 @@ class Orders extends Component {
         })
       }
     }
-    this.setState({loading: false, orders: fetchedOrders});   
+     this.setState({loading: false, orders: fetchedOrders});
    } catch (error) {
     console.log(error);
     this.setState({loading: false});
@@ -36,7 +36,7 @@ class Orders extends Component {
         {this.state.orders.map(order => 
           <Order key={order.id} 
           ingredients={order.ingredients} 
-          price={+order.price}/>)}
+           price={+order.price}/>)}  {/* { '+' convert string to number} */}
       </div>
     )
   }

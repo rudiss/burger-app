@@ -3,7 +3,6 @@ import classes from './Order.css'
 
 const order = props => {
   const ingredients = [];
-  const customer = [];
 
     for (const ingredientName in props.ingredients) {
       if (props.ingredients.hasOwnProperty(ingredientName)) {
